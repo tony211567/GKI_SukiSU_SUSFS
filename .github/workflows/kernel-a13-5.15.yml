@@ -1,11 +1,25 @@
 name: Android 13 5.15
 permissions:
-  contents: write # Allow writing to repository contents (for pushing tags)
-  actions: write # Allows triggering actions
+  contents: write
+  actions: write
 
 on:
   workflow_dispatch:
-  workflow_call: # This allows this workflow to be called from another workflow
+    inputs:
+      kernelsu_variant:
+        description: '内核变体 (建议填 SukiSU)'
+        required: true
+        default: 'SukiSU'
+      kernelsu_branch:
+        description: 'KSU分支 (填 v0.9.5 或其他)'
+        required: true
+        default: 'v0.9.5'
+      make_release:
+        description: '是否发布到 Release'
+        required: true
+        type: boolean
+        default: true
+  workflow_call:
     inputs:
       make_release:
         required: true
@@ -27,17 +41,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-
-          - sub_level: 185
-            os_patch_level: 2025-07
+          - sub_level: 189  # 这里已为你修改为 189
+            os_patch_level: 2026-02 # 对应当前时间段的补丁级别
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
-      make_release: ${{ inputs.make_release }}
+      make_release: ${{ inputs.make_release || true }}
       android_version: "android13"
       kernel_version: "5.15"
       sub_level: ${{ matrix.sub_level }}
       os_patch_level: ${{ matrix.os_patch_level }}
-      kernelsu_variant: ${{ inputs.kernelsu_variant }}
-      kernelsu_branch: ${{ inputs.kernelsu_branch }}
-      kernelsu_branch_other: ${{ inputs.kernelsu_branch_other }}
+      kernelsu_variant: ${{ inputs.kernelsu_variant || 'SukiSU' }}
+      kernelsu_branch: ${{ inputs.kernelsu_branch || 'v0.9.5' }}
+      kernelsu_branch_other: ${{ inputs.kernelsu_branch_other || '' }}
